@@ -4,7 +4,11 @@
         <description>Grammar for MXV files</description>
         <scripts>
             <script name="Demux MKV" type="ProcessResults" id="233">
-                <description>Exports the contained audio and video streams of the MKV.</description>
+                <description>Exports the contained audio and video streams of the MKV.
+
+You need to adjust the export directory in the script, otherwise it may not work, or it will write somewhere you didn't want it to.
+
+While this script works, it's slow (1 MB/s).</description>
                 <source language="Lua">-- The output directory. A lot of files will be written in there!
 -- You have to make sure that the directory exists.
 local exportDirectory = &quot;C:\\Users\\David Vogel\\Desktop\\Demuxed\\&quot;
@@ -170,6 +174,32 @@ end</source>
                 </fixedvalues>
             </string>
             <number name="ContentSize" id="153" type="integer"/>
+            <structure name="ChunkContent" id="154">
+                <number name="&lt;number&gt;" id="233" type="integer" length="4"/>
+                <number name="&lt;number-1&gt;" id="234" type="integer" length="4"/>
+                <offset name="SeekTable" id="276" length="8" references="id:134" follownullreference="yes">
+                    <description>Offset to chunks with tables that contain references to audio and video frames.
+
+This maps frame numbers to a file offset.</description>
+                </offset>
+                <number name="Frames" id="236" type="integer" length="8"/>
+                <number name="SeekTableMaxReadSize" id="241" type="integer" length="4"/>
+                <number name="&lt;number-4&gt;" id="242" type="integer" length="4"/>
+                <number name="&lt;number-5&gt;" id="243" type="integer" length="8"/>
+                <number name="&lt;number-6&gt;" id="244" type="integer" length="8"/>
+                <number name="FrameWidth" id="245" type="integer" length="4"/>
+                <number name="FrameHeight" id="247" type="integer" length="4"/>
+                <number name="FrameWidth2" id="248" type="integer" length="4"/>
+                <number name="FrameHeight2" id="249" type="integer" length="4"/>
+                <number name="&lt;number-7&gt;" id="250" type="integer" length="4"/>
+                <number name="MaxJPEGDataSize?" id="251" type="integer" length="4"/>
+                <number name="AudioSomething1" id="253" type="integer" length="8"/>
+                <number name="MaxAudioChunkSIze?" id="252" type="integer" length="8"/>
+                <binary name="&lt;binary&gt;" id="254" length="16"/>
+                <number name="AudioSampleCounter?" id="256" type="integer" length="8">
+                    <description>(Number of Frames+1) * SampleRate</description>
+                </number>
+            </structure>
         </structure>
         <structure name="MXJVHD64 Chunk" id="126" repeatmin="0" extends="id:123">
             <string name="ChunkTag" mustmatch="yes" id="157" type="fixed-length">
@@ -178,6 +208,26 @@ end</source>
                 </fixedvalues>
             </string>
             <number name="ContentSize" id="158" type="integer"/>
+            <structure name="ChunkContent" id="159">
+                <number name="&lt;number&gt;" id="237" type="integer" length="4"/>
+                <number name="&lt;number-1&gt;" id="238" type="integer" length="4"/>
+                <offset name="SeekTable" id="278" length="8" references="id:134" follownullreference="yes">
+                    <description>Offset to chunks with tables that contain references to audio and video frames.
+
+This maps frame numbers to a file offset.</description>
+                </offset>
+                <number name="Frames" id="240" type="integer" length="8"/>
+                <number name="SeekTableMaxReadSize" id="257" type="integer" length="4"/>
+                <number name="&lt;number-4&gt;" id="258" type="integer" length="4"/>
+                <number name="&lt;number-5&gt;" id="259" type="integer" length="8"/>
+                <number name="&lt;number-6&gt;" id="260" type="integer" length="8"/>
+                <number name="FrameWidth" id="261" type="integer" length="4"/>
+                <number name="FrameHeight" id="262" type="integer" length="4"/>
+                <number name="FrameWidth2" id="263" type="integer" length="4"/>
+                <number name="FrameHeight2" id="264" type="integer" length="4"/>
+                <number name="&lt;number-7&gt;" id="265" type="integer" length="4"/>
+                <number name="MaxJPEGDataSize?" id="266" type="integer" length="4"/>
+            </structure>
         </structure>
         <structure name="MXJVCO64 Chunk" id="128" repeatmin="0" extends="id:123">
             <string name="ChunkTag" mustmatch="yes" id="162" type="fixed-length">
@@ -186,6 +236,9 @@ end</source>
                 </fixedvalues>
             </string>
             <number name="ContentSize" id="163" type="integer"/>
+            <structure name="ChunkContent" id="164">
+                <description></description>
+            </structure>
         </structure>
         <structure name="MXJVPD64 Chunk" id="130" repeatmin="0" extends="id:123">
             <string name="ChunkTag" mustmatch="yes" id="167" type="fixed-length">
@@ -212,12 +265,20 @@ end</source>
             </structure>
         </structure>
         <structure name="MXJVFT64 Chunk" id="134" repeatmin="0" extends="id:123">
+            <description>A list of references to video and audio frames.
+
+There is (or may) be one more element than there are frames. So this is probably just useful to get a starting point to read the needed chunks.</description>
             <string name="ChunkTag" mustmatch="yes" id="179" type="fixed-length">
                 <fixedvalues>
                     <fixedvalue name="MagicNumber" value="MXJVFT64"/>
                 </fixedvalues>
             </string>
             <number name="ContentSize" id="180" type="integer"/>
+            <structure name="ChunkContent" id="181">
+                <structure name="Entries" id="273" repeatmin="0" repeatmax="-1" order="variable">
+                    <offset name="&lt;MXJVVF64 Chunk&gt;" id="275" repeatmin="0" length="8" references="id:136" follownullreference="yes"/>
+                </structure>
+            </structure>
         </structure>
         <structure name="MXJVVF64 Chunk" id="136" repeatmin="0" extends="id:123">
             <description>Video Frame that contains a JPEG image.</description>
