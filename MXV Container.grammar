@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.17">
+    <grammar name="MXV grammar" start="id:118" author="David Vogel" fileextension="mxv">
+        <description>Grammar for MXV files</description>
+        <scripts>
+            <script name="Demux MKV" type="ProcessResults" id="233">
+                <description>Exports the contained audio and video streams of the MKV.</description>
+                <source language="Lua">-- The output directory. A lot of files will be written in there!
+-- You have to make sure that the directory exists.
+local exportDirectory = &quot;C:\\Users\\David Vogel\\Desktop\\Demuxed\\&quot;
+
+function init()
+	print(&quot;Start demuxing...&quot;)
+end
+
+---Iterates over all results that were parsed according to the grammar file.
+---@param result any
+function processResult(result)
+
+	local level, type, name = result:getLevel(), result:getType(), result:getName()
+
+	-- Simple filter to get all needed elements from the MXLIST32 chunk.
+	-- No need to go through the hierarchy or other fancy things.
+	-- Timeline previews and other elements will be ignored, hopefully.
+	if level == 9 and type == synalysis.RESULT_STRUCTURE_ELEMENT_TYPE and name == &quot;JPEGData&quot; then
+		-- Result contains JPEG data.
+		local byteView = result:getByteView() -- For some reason getByteView returns a view of the whole file. That's why it is used in this way. If in some future version this script will not work, it's probably becuase this got fixed.
+		local startBytePos, byteLength = result:getStartBytePos(), result:getByteLength()
+		saveImage(byteView, startBytePos, byteLength)
+		return
+	elseif level == 9 and type == synalysis.RESULT_STRUCTURE_ELEMENT_TYPE and name == &quot;AudioData&quot; then
+		-- Result contains raw audio data.
+		local byteView = result:getByteView() -- For some reason getByteView returns a view of the whole file. That's why it is used in this way. If in some future version this script will not work, it's probably becuase this got fixed.
+		local startBytePos, byteLength = result:getStartBytePos(), result:getByteLength()
+		appendAudio(byteView, startBytePos, byteLength)
+		return
+	end
+end
+
+local imageCounter = 0
+---Creates and stores a new jpeg file for every frame.
+---@param byteView any
+---@param startBytePos integer
+---@param byteLength integer
+function saveImage(byteView, startBytePos, byteLength)
+	local filename = exportDirectory .. string.format(&quot;video-%08d.jpeg&quot;, imageCounter)
+	imageCounter = imageCounter + 1
+
+	if byteView == nil then return end
+
+	-- Create file.
+	local file, err = io.open(filename, &quot;wb&quot;)
+	if err then print(string.format(&quot;Failed to create file %s: %s&quot;, filename, err)) return end
+
+	-- Write data to the file.
+	for i = startBytePos, startBytePos+byteLength-1 do
+		file:write(string.char(byteView:readByte(i)))
+	end
+
+	file.close()
+end
+
+local audioFile
+---Creates and/or appends to a raw audio file.
+---@param byteView any
+---@param startBytePos integer
+---@param byteLength integer
+function appendAudio(byteView, startBytePos, byteLength)
+	local filename = exportDirectory .. &quot;audio.raw-audio&quot;
+
+	if byteView == nil then return end
+
+	-- Create file for the first chunk.
+	if audioFile == nil then
+		local err
+		audioFile, err = io.open(filename, &quot;wb&quot;)
+		if err then print(string.format(&quot;Failed to create file %s: %s&quot;, filename, err)) return end
+	end
+
+	-- Write data to the file.
+	for i = startBytePos, startBytePos+byteLength-1 do
+		audioFile:write(string.char(byteView:readByte(i)))
+	end
+end
+
+function terminate()
+	if audioFile then
+		audioFile:close()
+	end
+
+	print(&quot;Finished!&quot;)
+end</source>
+            </script>
+        </scripts>
+        <structure name="MXV Container" id="118" length="0" alignment="0" repeatmin="0" encoding="windows-1250" endian="little" signed="no">
+            <string name="MagicNumber" mustmatch="yes" id="119" fillcolor="FFFF7F" type="fixed-length" length="8">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXRIFF64"/>
+                </fixedvalues>
+            </string>
+            <number name="Size" id="120" type="integer" length="8"/>
+            <string name="Type" id="121" type="fixed-length" length="8">
+                <fixedvalues>
+                    <fixedvalue name="MXJVID64" value="MXJVID64"/>
+                </fixedvalues>
+            </string>
+            <structure name="Chunks" id="122" alignment="0" repeatmin="0" repeatmax="-1" consists-of="id:123" order="variable">
+                <structref name="&lt;MXJVH264 Chunk&gt;" id="125" repeatmin="0" structure="id:124"/>
+                <structref name="&lt;MXJVHD64 Chunk&gt;" id="127" repeatmin="0" structure="id:126"/>
+                <structref name="&lt;MXJVCO64 Chunk&gt;" id="129" repeatmin="0" structure="id:128"/>
+                <structref name="&lt;MXJVPD64 Chunk&gt;" id="131" repeatmin="0" structure="id:130"/>
+                <structref name="&lt;MXLIST64 Chunk&gt;" id="133" repeatmin="0" structure="id:132"/>
+                <structref name="&lt;MXJVFT64 Chunk&gt;" id="135" repeatmin="0" structure="id:134"/>
+                <structref name="&lt;MXJVVF64 Chunk&gt;" id="137" repeatmin="0" structure="id:136"/>
+                <structref name="&lt;MXJVAF64 Chunk&gt;" id="139" repeatmin="0" structure="id:138"/>
+                <structref name="&lt;MXWFMT64 Chunk&gt;" id="141" repeatmin="0" structure="id:140"/>
+                <structref name="&lt;MXLIST32 Chunk&gt;" id="143" repeatmin="0" structure="id:142"/>
+                <structref name="&lt;Chunk&gt;" id="144" disabled="yes" repeatmin="0" structure="id:123"/>
+            </structure>
+        </structure>
+        <structure name="Chunk" id="123" length="0" alignment="0" repeatmin="0" encoding="windows-1250" endian="little" signed="no">
+            <string name="ChunkTag" id="147" fillcolor="FFFF7F" type="fixed-length" length="8"/>
+            <number name="ContentSize" id="148" fillcolor="00FF7F" type="integer" length="8"/>
+            <structure name="ChunkContent" id="149" length="prev.ContentSize" alignment="0"/>
+        </structure>
+        <structure name="MXJVH264 Chunk" id="124" repeatmin="0" extends="id:123">
+            <string name="ChunkTag" mustmatch="yes" id="152" type="fixed-length">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXJVH264"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="153" type="integer"/>
+        </structure>
+        <structure name="MXJVHD64 Chunk" id="126" repeatmin="0" extends="id:123">
+            <string name="ChunkTag" mustmatch="yes" id="157" type="fixed-length">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXJVHD64"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="158" type="integer"/>
+        </structure>
+        <structure name="MXJVCO64 Chunk" id="128" repeatmin="0" extends="id:123">
+            <string name="ChunkTag" mustmatch="yes" id="162" type="fixed-length">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXJVCO64"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="163" type="integer"/>
+        </structure>
+        <structure name="MXJVPD64 Chunk" id="130" repeatmin="0" extends="id:123">
+            <string name="ChunkTag" mustmatch="yes" id="167" type="fixed-length">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXJVPD64"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="168" type="integer"/>
+        </structure>
+        <structure name="MXLIST64 Chunk" id="132" length="0" alignment="0" repeatmin="0" encoding="windows-1250" endian="little" signed="no">
+            <string name="ChunkTag" mustmatch="yes" id="172" fillcolor="FFFF7F" type="fixed-length" length="8">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXLIST64"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="173" fillcolor="00FF7F" type="integer" length="8"/>
+            <string name="ContentType" id="174" type="fixed-length" length="8">
+                <fixedvalues>
+                    <fixedvalue name="MXJVFL64" value="MXJVFL64"/>
+                </fixedvalues>
+            </string>
+            <structure name="Chunks" id="175" repeatmin="0" repeatmax="-1" consists-of="id:123" order="variable">
+                <structref name="&lt;MXJVVF64 Chunk&gt;" id="176" repeatmin="0" structure="id:136"/>
+            </structure>
+        </structure>
+        <structure name="MXJVFT64 Chunk" id="134" repeatmin="0" extends="id:123">
+            <string name="ChunkTag" mustmatch="yes" id="179" type="fixed-length">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXJVFT64"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="180" type="integer"/>
+        </structure>
+        <structure name="MXJVVF64 Chunk" id="136" repeatmin="0" extends="id:123">
+            <description>Video Frame that contains a JPEG image.</description>
+            <string name="ChunkTag" mustmatch="yes" id="184" type="fixed-length">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXJVVF64"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="185" type="integer"/>
+            <structure name="ChunkContent" id="186">
+                <grammarref name="JPEG" id="187" disabled="yes" filename="jpeg.grammar"/>
+                <binary name="JPEGData" id="188" fillcolor="FF5500" length="remaining"/>
+            </structure>
+        </structure>
+        <structure name="MXJVAF64 Chunk" id="138" repeatmin="0" extends="id:123">
+            <description>Audio Frame that contains raw audio samples.</description>
+            <string name="ChunkTag" mustmatch="yes" id="191" type="fixed-length">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXJVAF64"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="192" type="integer"/>
+            <structure name="ChunkContent" id="193">
+                <number name="ChannelBitDepth" id="194" type="integer" length="4"/>
+                <number name="StartSample" id="195" type="integer" length="8"/>
+                <number name="Samples" id="196" type="integer" length="4"/>
+                <binary name="AudioData" id="197" fillcolor="00AA00" length="remaining"/>
+            </structure>
+        </structure>
+        <structure name="MXWFMT64 Chunk" id="140" repeatmin="0" extends="id:123">
+            <string name="ChunkTag" mustmatch="yes" id="200" type="fixed-length">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXWFMT64"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="201" type="integer"/>
+            <structure name="ChunkContent" id="202">
+                <number name="Tracks?" id="203" type="integer" length="2"/>
+                <number name="Channels?" id="204" type="integer" length="2"/>
+                <number name="SampleRate?" id="205" type="integer" length="4"/>
+                <number name="ByteRate?" id="206" type="integer" length="4"/>
+                <number name="BytesPerSample?" id="207" type="integer" length="2"/>
+                <number name="ChannelBitDepth?" id="208" type="integer" length="4"/>
+            </structure>
+        </structure>
+        <structure name="MXLIST32 Chunk" id="142" length="0" alignment="0" repeatmin="0" encoding="windows-1250" endian="little" signed="no">
+            <string name="ChunkTag" mustmatch="yes" id="211" fillcolor="FFFF7F" type="fixed-length" length="8">
+                <fixedvalues>
+                    <fixedvalue name="MagicNumber" value="MXLIST32"/>
+                </fixedvalues>
+            </string>
+            <number name="ContentSize" id="212" fillcolor="00FF7F" type="integer" length="8"/>
+            <string name="ContentType" id="213" type="fixed-length" length="8">
+                <fixedvalues>
+                    <fixedvalue name="MXJVTL32" value="MXJVTL32"/>
+                </fixedvalues>
+            </string>
+            <structure name="ChunkContent" id="214">
+                <structure name="Entries" id="215" repeatmin="0" repeatmax="-1" order="variable">
+                    <structure name="VFTE Entry" id="216" repeatmin="0">
+                        <string name="MagicNumber" mustmatch="yes" id="217" fillcolor="55FFFF" type="fixed-length" length="4">
+                            <fixedvalues>
+                                <fixedvalue name="MagicNumber" value="VFTE"/>
+                            </fixedvalues>
+                        </string>
+                        <number name="FrameRate?" id="218" type="integer" length="4"/>
+                        <offset name="ChunkRef" id="219" length="8" references="id:136" follownullreference="yes"/>
+                        <number name="ChunkSize" id="220" type="integer" length="4"/>
+                    </structure>
+                    <structure name="AFTE Entry" id="222">
+                        <string name="MagicNumber" mustmatch="yes" id="223" fillcolor="FFAAFF" type="fixed-length" length="4">
+                            <fixedvalues>
+                                <fixedvalue name="MagicNumber" value="AFTE"/>
+                            </fixedvalues>
+                        </string>
+                        <number name="FrameRate?" id="224" type="integer" length="4"/>
+                        <offset name="ChunkRef" id="225" length="8" references="id:138" follownullreference="yes"/>
+                        <number name="ChunkSize" id="226" type="integer" length="4"/>
+                        <number name="StartSample" id="227" type="integer" length="8"/>
+                        <number name="Samples" id="228" type="integer" length="4"/>
+                    </structure>
+                </structure>
+            </structure>
+        </structure>
+    </grammar>
+</ufwb>
