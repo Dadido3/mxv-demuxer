@@ -52,9 +52,29 @@ function saveImage(byteView, startBytePos, byteLength)
 	local file, err = io.open(filename, &quot;wb&quot;)
 	if err then print(string.format(&quot;Failed to create file %s: %s&quot;, filename, err)) return end
 
-	-- Write data to the file.
-	for i = startBytePos, startBytePos+byteLength-1 do
-		file:write(string.char(byteView:readByte(i)))
+	-- Write data to the file. In chunks of several byte, there seems to be no other way due to how awkward the synalysis API is.
+	local copyOffset, copyLength = startBytePos, byteLength
+	while copyLength &gt; 0 do
+		if copyLength &gt;= 10 then
+			-- Copy chunk of 10 bytes.
+			file:write(string.char(
+				byteView:readByte(copyOffset),
+				byteView:readByte(copyOffset+1),
+				byteView:readByte(copyOffset+2),
+				byteView:readByte(copyOffset+3),
+				byteView:readByte(copyOffset+4),
+				byteView:readByte(copyOffset+5),
+				byteView:readByte(copyOffset+6),
+				byteView:readByte(copyOffset+7),
+				byteView:readByte(copyOffset+8),
+				byteView:readByte(copyOffset+9)
+			))
+			copyOffset, copyLength = copyOffset+10, copyLength-10
+		else
+			-- Copy single bytes until end.
+			file:write(string.char(byteView:readByte(copyOffset)))
+			copyOffset, copyLength = copyOffset+1, copyLength-1
+		end
 	end
 
 	file.close()
@@ -77,9 +97,29 @@ function appendAudio(byteView, startBytePos, byteLength)
 		if err then print(string.format(&quot;Failed to create file %s: %s&quot;, filename, err)) return end
 	end
 
-	-- Write data to the file.
-	for i = startBytePos, startBytePos+byteLength-1 do
-		audioFile:write(string.char(byteView:readByte(i)))
+	-- Write data to the file. In chunks of several byte, there seems to be no other way due to how awkward the synalysis API is.
+	local copyOffset, copyLength = startBytePos, byteLength
+	while copyLength &gt; 0 do
+		if copyLength &gt;= 10 then
+			-- Copy chunk of 10 bytes.
+			audioFile:write(string.char(
+				byteView:readByte(copyOffset),
+				byteView:readByte(copyOffset+1),
+				byteView:readByte(copyOffset+2),
+				byteView:readByte(copyOffset+3),
+				byteView:readByte(copyOffset+4),
+				byteView:readByte(copyOffset+5),
+				byteView:readByte(copyOffset+6),
+				byteView:readByte(copyOffset+7),
+				byteView:readByte(copyOffset+8),
+				byteView:readByte(copyOffset+9)
+			))
+			copyOffset, copyLength = copyOffset+10, copyLength-10
+		else
+			-- Copy single bytes until end.
+			audioFile:write(string.char(byteView:readByte(copyOffset)))
+			copyOffset, copyLength = copyOffset+1, copyLength-1
+		end
 	end
 end
 
