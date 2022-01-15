@@ -77,7 +77,7 @@ function saveImage(byteView, startBytePos, byteLength)
 		end
 	end
 
-	file.close()
+	file:close()
 end
 
 local audioFile
