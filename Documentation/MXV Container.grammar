@@ -344,7 +344,7 @@ There is (or may) be one more element than there are frames. So this is probably
                                 <fixedvalue name="MagicNumber" value="VFTE"/>
                             </fixedvalues>
                         </string>
-                        <number name="FrameRate?" id="218" type="integer" length="4"/>
+                        <number name="ContentSize" id="218" type="integer" length="4"/>
                         <offset name="ChunkRef" id="219" length="8" references="id:136" follownullreference="yes"/>
                         <number name="ChunkSize" id="220" type="integer" length="4"/>
                     </structure>
@@ -354,7 +354,7 @@ There is (or may) be one more element than there are frames. So this is probably
                                 <fixedvalue name="MagicNumber" value="AFTE"/>
                             </fixedvalues>
                         </string>
-                        <number name="FrameRate?" id="224" type="integer" length="4"/>
+                        <number name="ContentSize" id="224" type="integer" length="4"/>
                         <offset name="ChunkRef" id="225" length="8" references="id:138" follownullreference="yes"/>
                         <number name="ChunkSize" id="226" type="integer" length="4"/>
                         <number name="StartSample" id="227" type="integer" length="8"/>
