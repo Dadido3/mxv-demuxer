@@ -1,0 +1,30 @@
+name: Build and release
+
+on: 
+  release:
+    types: [created]
+
+jobs:
+
+  build:
+    name: Build and release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [windows]
+        goarch: [amd64]
+        exclude:
+        - goos: darwin
+          goarch: "386"
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: wangyoucao577/go-release-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        ldflags: -X 'main.versionString=${{ github.event.release.tag_name }}'
+        extra_files: LICENSE README.md

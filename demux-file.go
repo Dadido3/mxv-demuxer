@@ -24,7 +24,7 @@ func demuxFile(filename string) error {
 
 	chunk, err := ParseChunk64(file)
 	if err != nil {
-		return fmt.Errorf("failed to parse all chunks: %w", err)
+		return fmt.Errorf("failed to parse root chunk: %w", err)
 	}
 
 	chunkMXRIFF64, ok := chunk.(*ChunkMXRIFF64)
@@ -60,7 +60,7 @@ func demuxFile(filename string) error {
 	}
 
 	// Get MXLIST64 with audio and video frames (MXJVFL64).
-	var frameCounter int
+	var frameCounter, audioSampleCounter int
 	for _, childChunk := range chunkMXRIFF64.Chunks {
 		if listChunk, ok := childChunk.(*ChunkMXLIST64); ok && listChunk.ContentType == MXJVFL64 {
 
@@ -82,6 +82,7 @@ func demuxFile(filename string) error {
 						if _, err := wavObject.Write(frameChunk.Data); err != nil {
 							return err
 						}
+						audioSampleCounter += int(frameChunk.Samples)
 					} else {
 						log.Printf("Found audio chunk, but there was no waveform table chunk.")
 					}
@@ -104,6 +105,8 @@ func demuxFile(filename string) error {
 			return fmt.Errorf("failed to write audio file: %w", err)
 		}
 	}
+
+	log.Printf("Completely demuxed %q: %d video frames, %d audio samples", filename, frameCounter, audioSampleCounter)
 
 	return nil
 }
