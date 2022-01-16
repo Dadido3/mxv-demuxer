@@ -224,7 +224,13 @@ type ChunkMXJVH264 struct {
 }
 
 func (c *ChunkMXJVH264) UnmarshalChunk(reader io.Reader, length uint64) error {
-	return binary.Read(reader, binary.LittleEndian, c)
+	err := binary.Read(reader, binary.LittleEndian, c)
+
+	// Ignore unexpected end of (chunk). Older formats may have fewer fields.
+	if errors.Is(err, io.ErrUnexpectedEOF) {
+		return nil
+	}
+	return err
 }
 
 type ChunkMXJVHD64 struct {
@@ -245,7 +251,13 @@ type ChunkMXJVHD64 struct {
 }
 
 func (c *ChunkMXJVHD64) UnmarshalChunk(reader io.Reader, length uint64) error {
-	return binary.Read(reader, binary.LittleEndian, c)
+	err := binary.Read(reader, binary.LittleEndian, c)
+
+	// Ignore unexpected end of (chunk). Older formats may have fewer fields.
+	if errors.Is(err, io.ErrUnexpectedEOF) {
+		return nil
+	}
+	return err
 }
 
 type ChunkMXJVPD64 struct {

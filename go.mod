@@ -1,4 +1,4 @@
-module github.com/Dadido3/mkv-demuxer
+module github.com/Dadido3/mxv-demuxer
 
 go 1.17
 
