@@ -32,7 +32,7 @@ This comes with the following disadvantages:
 
 ## Usage
 
-- Download the executable from the [latest release](https://github.com/Dadido3/mxv-demux/releases/latest).
+- Download the executable from the [latest release](https://github.com/Dadido3/mxv-demuxer/releases/latest).
 - Move the executable `mxv-demux.exe` into a folder with your mxv-files.
 - Run `mxv-demux.exe`.
 - The tool will create new folders for every mxv-file it encounters:
