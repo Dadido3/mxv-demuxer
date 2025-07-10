@@ -59,3 +59,11 @@ If the audio and video stream run out of sync after some time, you probably need
 I can't be bothered to check right now how to do that, Avidemux is a bit quirky in this regard.
 
 ![Example showing the process](documentation/example-avidemux-boxes.png)
+
+## Building
+
+To build the application you have to have the [Go toolchain installed](https://go.dev/doc/install) and run the following command inside this directory:
+
+```bash
+go build
+```

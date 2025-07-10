@@ -1,4 +1,4 @@
-// Copyright (c) 2022 David Vogel
+// Copyright (c) 2022-2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -12,6 +12,8 @@ import (
 	"log"
 	"path/filepath"
 	"strings"
+
+	"github.com/earthboundkid/versioninfo/v2"
 )
 
 func main() {
@@ -19,7 +21,7 @@ func main() {
 
 	filenames := flag.Args()
 
-	log.Printf("Started mxv-demuxer %v.", version)
+	log.Printf("Started mxv-demuxer %v.", versioninfo.Version)
 
 	if len(filenames) == 0 {
 		var err error

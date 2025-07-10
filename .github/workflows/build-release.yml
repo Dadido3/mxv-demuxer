@@ -26,5 +26,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
-        ldflags: -X 'main.versionString=${{ github.event.release.tag_name }}'
         extra_files: LICENSE README.md
