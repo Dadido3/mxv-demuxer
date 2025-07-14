@@ -22,7 +22,7 @@ For MXV files it's most likely always set to `MXJVID64`.
 
 The root chunk has the following sub-chunks:
 
-- `MXJVH264`: This contains information about the number of video and audio frames, the video resolution, and some unimportant and/or unknown data.
+- `MXJVH264`: This contains information about the number of video and audio frames, the video resolution, the framerate, and some unimportant and/or unknown data.
 - `MXJVHD64`: Same as `MXJVH264`, but shorter.
   Likely from an older version, and it may just be there for compatibility reasons.
   It's also missing all of the audio information.
@@ -49,9 +49,9 @@ Theoretically the frame data in `MXJVFL64` could be written out of order, and st
 
 If you have some MAGIX video editing software you can provide small synthetic test video files varying by the following parameters:
 
-- Framerate
-- Pixel aspect ratio
-- Audio sample rate
+- ~~Framerate~~
+- ~~Pixel aspect ratio~~
+- ~~Audio sample rate~~
 - Audio channels
 - Audio bit depth
 - Or anything else you can think of
@@ -65,7 +65,7 @@ Feel free to open a new issue if you find any discrepancies in the current docum
 ## Old grammar file
 
 [MXV Container.grammar](./MXV%20Container.grammar) is a grammar file made with [hexinator] that helps to decode and inspect MXV files.
-It's also be compatible with [Synalyze It!].
+It's also compatible with [Synalyze It!].
 
 As i don't have access to a full version of hexinator or similar software, i'll not continue to work on `MXV Container.grammar`.
 

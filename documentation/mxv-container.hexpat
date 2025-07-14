@@ -10,7 +10,7 @@ u64 VideoFrames out;        // Number of detected video frames. There may be few
 u64 AudioFrames out;        // Number of detected audio frames. There may be fewer frames shown here, as the format is able to deduplicate frames.
 u64 AudioSamples out;       // Number of detected audio samples.
 u64 VFTEEntries out;        // Number of detected VFTE entries. This corresponds to the real number of video frames.
-u64 AFTEEntries out;        // Number of detected AFTE etries. This corresponds to the real number of audio frames.
+u64 AFTEEntries out;        // Number of detected AFTE entries. This corresponds to the real number of audio frames.
 u64 MXJVFT64Entries out;    // Number of detected VFT entries.
 u64 MaxVideoChunkSize out;  // Size of the largest video frame chunk.
 u64 MaxAudioChunkSize out;  // Size of the largest video frame chunk.
@@ -43,7 +43,7 @@ enum MXIdentifier64 : u64 {
     MXJVHD64 = 0x34364448564A584D, // Older (and shorter) version of the video format info chunk.
     MXJVPD64 = 0x34364450564A584D,
     MXJVVF64 = 0x34364656564A584D, // Video frame data as a JPEG.
-    MXWFMT64 = 0x3436544D4657584D, // Audioformat info (Wave format).
+    MXWFMT64 = 0x3436544D4657584D, // Audio format info (Wave format).
 };
 
 // List content types.
@@ -123,14 +123,14 @@ struct ChunkMXJVFT64 {
 };
 
 struct ChunkMXJVH264 {
-    u32;                    // Seems to be always 112, the size of this struct.
-    u32;
+    u32;                    // Seems to be always 112, may be the size of this struct.
+    u32;                    // Guess: May be some sort of version. (File or encoding software)
     if (DecodePointers) {Chunk64 *FrameTable: u64;} else {u64 FrameTableOffset;}  // File offset of ChunkMXJVFT64.
     u64 VideoFrames;        // The total number of VFTE entries (These point to MXJVVF64 chunks that contain images). It's possible that several VFTE entries point to the same MXJVVF64 chunk.
     u32 MaxReadSize;        // Guess: Seems to be the max of all video and audio frame chunk pairs. Perhaps to tell any software what the max. buffer size needs to be.
-    u32;
+    u32;                    // Guess: May be some sort of version. (File or encoding software)
     u64;
-    u64;
+    double Framerate;       // Number of frames per second. For interlaced video it will store the number of full frames per second. I.e. PAL has 50 fields/s and therefore 25 full frames/s.
     u32 FrameWidth;
     u32 FrameHeight;
     u32 FrameWidth2;        // Maybe needed when the video is anamorphic? It's the same as the above width in all my test files.
@@ -139,7 +139,8 @@ struct ChunkMXJVH264 {
     u32 MaxJPEGSize;        // The JPEG data size of the largest MXJVVF64 chunk. (The size only includes the JPEG data)
     u64 AudioFrames;        // Number of AFTE entries (These point to MXJVAF64 chunks that contain waveform data)
     u64 MaxAudioChunkSize;  // The size of the largest MXJVAF64 chunk. (The size includes the chunk identifier and length field and all its data)
-    u8  Unknown8[16];       // Guess: This could be audio related stuff.
+    double AspectRatio;     // Final image aspect ratio. If this ratio != FrameWidth / FrameHeight the video doesn't have square pixels.
+    u64;                    // Guess: This could be audio related stuff.
     u64 AudioSamples;       // Total number of audio samples.
 };
 
@@ -151,7 +152,7 @@ struct ChunkMXJVHD64 {
     u32 SeekTableMaxReadSize;
     u32;
     u64;
-    u64;
+    double Framerate;
     u32 FrameWidth;
     u32 FrameHeight;
     u32 FrameWidth2;

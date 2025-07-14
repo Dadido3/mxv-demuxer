@@ -67,3 +67,9 @@ To build the application you have to have the [Go toolchain installed](https://g
 ```bash
 go build
 ```
+
+## Thanks
+
+- Thanks to [YourMJK] for providing well crafted example files and general help with reverse engineering the MXV video format.
+
+[YourMJK]: https://github.com/YourMJK
