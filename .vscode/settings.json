@@ -2,6 +2,7 @@
     "cSpell.words": [
         "AFTE",
         "Avidemux",
+        "bitfield",
         "Chans",
         "Dadido",
         "demux",
@@ -10,6 +11,7 @@
         "earthboundkid",
         "hexinator",
         "hexpat",
+        "IYUV",
         "Magix",
         "moutend",
         "Muxing",
@@ -34,6 +36,8 @@
         "versioninfo",
         "VFTE",
         "Vogel",
-        "wfmt"
+        "wfmt",
+        "YUNV",
+        "YUYV"
     ]
 }

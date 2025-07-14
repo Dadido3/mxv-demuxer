@@ -52,6 +52,20 @@ enum MXContentType64 : u64 {
     MXJVTL32 = 0x32334C54564A584D, // List of offsets of the respective video and audio chunks.
 };
 
+// Color formats.
+enum ColorFormat : u32 {
+    ColorFormatZero = 0,
+    ColorFormatThree = 3,
+    ColorFormatI420 = 0x30323449,
+    ColorFormatIYUV = 0x56555949,
+    ColorFormatY411 = 0x31313459,
+    ColorFormatY422 = 0x32323456,
+    ColorFormatYUNV = 0x564e5559,
+    ColorFormatYUY2 = 0x32595559,
+    ColorFormatYUYV = 0x56595559,
+    ColorFormatYV12 = 0x32315659,
+};
+
 using Chunk64;
 
 struct ChunkMXAFTE {
@@ -122,6 +136,21 @@ struct ChunkMXJVFT64 {
     MXJVFT64Entries += parent.Length/8;
 };
 
+bitfield ChunkMXJVH264Flags {
+    A : 1;
+    B : 1;
+    C : 1;          // Is set in all test files i have. 
+    D : 1;          // Guess: Something about interlacing. I haven't seen a file with this flag set, but the software queries this flag with code that's related to (de)interlacing.
+    E : 1;
+    F : 1;
+    G : 1;
+    H : 1;
+    I : 1;
+    J : 1;
+    K : 1;
+    padding : 21;
+};
+
 struct ChunkMXJVH264 {
     u32;                    // Seems to be always 112, may be the size of this struct.
     u32;                    // Guess: May be some sort of version. (File or encoding software)
@@ -133,15 +162,16 @@ struct ChunkMXJVH264 {
     double Framerate;       // Number of frames per second. For interlaced video it will store the number of full frames per second. I.e. PAL has 50 fields/s and therefore 25 full frames/s.
     u32 FrameWidth;
     u32 FrameHeight;
-    u32 FrameWidth2;        // Maybe needed when the video is anamorphic? It's the same as the above width in all my test files.
-    u32 FrameHeight2;       // Maybe needed when the video is anamorphic? It's the same as the above height in all my test files.
+    u32 FrameWidth2;            // Maybe needed when the video is anamorphic? It's the same as the above width in all my test files.
+    u32 FrameHeight2;           // Maybe needed when the video is anamorphic? It's the same as the above height in all my test files.
+    ChunkMXJVH264Flags Flags;
+    u32 MaxJPEGSize;            // The JPEG data size of the largest MXJVVF64 chunk. (The size only includes the JPEG data)
+    u64 AudioFrames;            // Number of AFTE entries (These point to MXJVAF64 chunks that contain waveform data)
+    u64 MaxAudioChunkSize;      // The size of the largest MXJVAF64 chunk. (The size includes the chunk identifier and length field and all its data)
+    double AspectRatio;         // Final image aspect ratio. If this ratio != FrameWidth / FrameHeight the video doesn't have square pixels.
+    ColorFormat ColorFormat;    // Color format.
     u32;
-    u32 MaxJPEGSize;        // The JPEG data size of the largest MXJVVF64 chunk. (The size only includes the JPEG data)
-    u64 AudioFrames;        // Number of AFTE entries (These point to MXJVAF64 chunks that contain waveform data)
-    u64 MaxAudioChunkSize;  // The size of the largest MXJVAF64 chunk. (The size includes the chunk identifier and length field and all its data)
-    double AspectRatio;     // Final image aspect ratio. If this ratio != FrameWidth / FrameHeight the video doesn't have square pixels.
-    u64;                    // Guess: This could be audio related stuff.
-    u64 AudioSamples;       // Total number of audio samples.
+    u64 AudioSamples;           // Total number of audio samples.
 };
 
 struct ChunkMXJVHD64 {
@@ -157,7 +187,7 @@ struct ChunkMXJVHD64 {
     u32 FrameHeight;
     u32 FrameWidth2;
     u32 FrameHeight2;
-    u32;
+    ChunkMXJVH264Flags Flags;
     u32 MaxJPEGSize;
 };
 
