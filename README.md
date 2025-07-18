@@ -69,6 +69,31 @@ To build the application you have to have the [Go toolchain installed](https://g
 go build
 ```
 
+## Usage as library
+
+The MXRIFF64 and MXV parser is available in its own package.
+Run `go get github.com/Dadido3/mxv-demuxer` inside your go module, and then you can use the `mxv` package to extract audio and video data:
+
+```go
+import "github.com/Dadido3/mxv-demuxer/mxv"
+
+func main() {
+    file, err := os.Open("some.mxv")
+    if err != nil {
+        log.Panicf("Failed to open file: %v.", err)
+    }
+
+    mxvReader, err := mxv.NewReader(file)
+    if err != nil {
+        log.Panicf("Failed to read MXV file: %v.", err)
+    }
+
+    log.Printf("MXV info: %+v.", mxvReader.Info)
+}
+```
+
+Support for writing MXV files or MXRIFF64 containers is not implemented, but can be added at a later date if needed.
+
 ## Thanks
 
 - Thanks to [YourMJK] for providing well crafted example files and general help with reverse engineering the MXV video format.
