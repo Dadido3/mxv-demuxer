@@ -21,7 +21,7 @@ import std.sys;
 
 // Form type, aka "File type".
 enum MXFormType : u64 {
-    MXJVID64 = 0x34364449564A584D, // Magix Video File (MXV).
+    MXJVID64 = 0x34364449564A584D, // MAGIX Video File (MXV).
 };
 
 // Chunk32 identifiers.
@@ -139,9 +139,9 @@ struct ChunkMXJVFT64 {
 bitfield ChunkMXJVH264Flags {
     A : 1;
     B : 1;
-    C : 1;          // Is set in all test files i have. 
-    D : 1;          // Guess: Something about interlacing. I haven't seen a file with this flag set, but the software queries this flag with code that's related to (de)interlacing.
-    E : 1;
+    HasAudio : 1;       // Guess: This file contains audio data. "MXV_FLAG_AVI".
+    Interlaced : 1;     // Guess: May indicate interlaced video. I haven't seen a file with this flag set, but the software queries this flag with code that's related to (de)interlacing.
+    FieldOrder : 1;     // Guess: Field order in case it's interlaced video material.
     F : 1;
     G : 1;
     H : 1;

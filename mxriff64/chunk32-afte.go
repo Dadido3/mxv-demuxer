@@ -1,0 +1,76 @@
+// Copyright (c) 2025 David Vogel
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
+package mxriff64
+
+import (
+	"encoding/binary"
+	"fmt"
+)
+
+// MAGIX Audio Frame Table Entry.
+type Chunk32AFTE struct {
+	*Accessor
+
+	// Assume all unknown Chunk64 chunks have a header size of 8 byte.
+	Header struct {
+		DataLength int32
+	}
+
+	Data Chunk32AFTEData
+}
+
+type Chunk32AFTEData struct {
+	AudioFrameChunkOffset int64  // The file offset of the MXJVAF64 chunk that contains the audio frame.
+	AudioFrameChunkSize   uint32 // The size of the MXJVAF64 chunk that contains the audio frame.
+	StartSample           uint64 // The start sample of the audio frame.
+	Samples               uint32 // The amount of samples in the audio frame.
+}
+
+// Returns the identifier of the chunk.
+func (c *Chunk32AFTE) Identifier() Identifier32 {
+	return Identifier32{'A', 'F', 'T', 'E'}
+}
+
+// Returns the total length of the chunk, including headers and such.
+func (c *Chunk32AFTE) Length() int32 {
+	return 4 + 4 + c.Header.DataLength
+}
+
+// Parses the data from "a" and returns a Chunk32 that can be used to further inspect the chunk content.
+// The seek position of "a" needs to be at the length field, as the identifier is already read and parsed.
+//
+// This function doesn't need to parse anything beside the chunk header.
+// Which enables quick iteration over chunks without storing or parsing any unnecessary data.
+//
+// Internal: This will be called by ReadChunk32 and should only be used to create new instances of chunk objects.
+func (*Chunk32AFTE) BuildChunk(a *Accessor) (Chunk32, error) {
+	if a == nil {
+		return nil, fmt.Errorf("accessor is nil")
+	}
+
+	c := &Chunk32AFTE{Accessor: a}
+
+	if err := binary.Read(c, binary.LittleEndian, &c.Header); err != nil {
+		return nil, fmt.Errorf("failed to read header of %q chunk: %w", c.Identifier(), err)
+	}
+
+	dataStartOffset := c.Accessor.Pos
+
+	if err := binary.Read(c, binary.LittleEndian, &c.Data); err != nil {
+		return nil, fmt.Errorf("failed to read data of %q chunk: %w", c.Identifier(), err)
+	}
+
+	readBytes := c.Accessor.Pos - dataStartOffset
+	if readBytes != int64(c.Header.DataLength) {
+		return nil, fmt.Errorf("unexpected data length in header of %T. Got %d bytes, but expect %d bytes", c, c.Header.DataLength, readBytes)
+	}
+
+	return c, nil
+}
+
+func init() {
+	MustRegisterChunk32(&Chunk32AFTE{})
+}
