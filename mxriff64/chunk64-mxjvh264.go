@@ -29,7 +29,7 @@ type Chunk64MXJVH264Data struct {
 	AspectRatio       float64     // Final image aspect ratio. If this ratio != FrameWidth / FrameHeight the video doesn't have square pixels.
 	ColorFormat       ColorFormat // Color format.
 	Unknown4          uint32
-	AudioSamples      uint64 // Total number of audio samples.
+	AudioSamples      uint64 // Total number of audio samples. It's possible that the audio and video length don't match. Older files have shown a mismatch of 1 frame here.
 }
 
 // Returns the identifier of the chunk.

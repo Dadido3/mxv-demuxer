@@ -171,7 +171,7 @@ struct ChunkMXJVH264 {
     double AspectRatio;         // Final image aspect ratio. If this ratio != FrameWidth / FrameHeight the video doesn't have square pixels.
     ColorFormat ColorFormat;    // Color format.
     u32;
-    u64 AudioSamples;           // Total number of audio samples.
+    u64 AudioSamples;           // Total number of audio samples. It's possible that the audio and video length don't match. Older files have shown a mismatch of 1 frame here.
 };
 
 struct ChunkMXJVHD64 {
