@@ -96,6 +96,7 @@ func NewReader(rs io.ReadSeeker) (*Reader, error) {
 		r.Info.Framerate = r.chunkVideoHeader2.Data.Framerate
 		r.Info.VideoFrames = r.chunkVideoHeader2.Data.VideoFrames
 		r.Info.AspectRatio = r.chunkVideoHeader2.Data.AspectRatio
+		r.Info.ColorFormat = r.chunkVideoHeader2.Data.ColorFormat
 
 		r.Info.HasAudio = r.chunkVideoHeader2.Data.Flags&0b00000100 != 0
 		r.Info.AudioFrames = r.chunkVideoHeader2.Data.AudioFrames
