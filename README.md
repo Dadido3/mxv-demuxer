@@ -12,8 +12,9 @@ A detailed explanation is given below.
 
 I tested this tool on video material from:
 
-- MAGIX Video Deluxe 2007/2008
+- MAGIX Video deluxe 2007/2008
 - MAGIX Video Pro X5
+- MAGIX Video deluxe 2025
 
 ## Reason for its existence
 

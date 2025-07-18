@@ -1,4 +1,4 @@
-// Copyright (c) 2022 David Vogel
+// Copyright (c) 2022-2025 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -7,10 +7,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/Dadido3/mxv-demuxer/mxv"
 	"github.com/moutend/go-wav"
 )
 
@@ -22,34 +24,13 @@ func demuxFile(filename string) error {
 		return fmt.Errorf("failed to open file: %w", err)
 	}
 
-	chunk, err := ParseChunk64(file)
+	mxvReader, err := mxv.NewReader(file)
 	if err != nil {
-		return fmt.Errorf("failed to parse root chunk: %w", err)
+		return fmt.Errorf("failed to read MXV file: %w", err)
 	}
 
-	chunkMXRIFF64, ok := chunk.(*ChunkMXRIFF64)
-	if !ok {
-		return fmt.Errorf("file doesn't contain a MXRIFF64 as root chunk")
-	}
-
-	// Get wave format.
-	var audioSampleRate, audioBitDepth, audioChannels int
-	var wavObject *wav.File
-	for _, childChunk := range chunkMXRIFF64.Chunks {
-		if wfmtChunk, ok := childChunk.(*ChunkMXWFMT64); ok {
-			audioSampleRate = int(wfmtChunk.ByteRate) / int(wfmtChunk.BytesPerSample) // Seems to be more reliable than just using the SampleRate field.
-			audioBitDepth = int(wfmtChunk.ChannelBitDepth)
-			audioChannels = int(wfmtChunk.Channels)
-			log.Printf("Found waveform table chunk: %v", wfmtChunk)
-			log.Printf("Set up audio: SampleRate = %d, BitDepth = %d, Channels = %d", audioSampleRate, audioBitDepth, audioChannels)
-
-			// Set up empty wav object.
-			if wavObject, err = wav.New(audioSampleRate, audioBitDepth, audioChannels); err != nil {
-				return fmt.Errorf("failed to create wav object: %w", err)
-			}
-
-			break
-		}
+	if err := mxvReader.PrepareLookupTable(); err != nil {
+		return fmt.Errorf("failed to prepare lookup table: %w", err)
 	}
 
 	// Create output directory.
@@ -59,54 +40,67 @@ func demuxFile(filename string) error {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	// Get MXLIST64 with audio and video frames (MXJVFL64).
-	var frameCounter, audioSampleCounter int
-	for _, childChunk := range chunkMXRIFF64.Chunks {
-		if listChunk, ok := childChunk.(*ChunkMXLIST64); ok && listChunk.ContentType == MXJVFL64 {
+	log.Printf("MXV info: %+v.", mxvReader.Info)
 
-			// Go through list of video and audio frames.
-			for _, frameChunk := range listChunk.Chunks {
-				switch frameChunk := frameChunk.(type) {
-				case *ChunkMXJVVF64:
-					// Create file and write image data into it.
-					videoFilename := filepath.Join(outputPath, fmt.Sprintf("video-%06d.jpeg", frameCounter))
-					frameCounter++
-
-					if err := os.WriteFile(videoFilename, frameChunk.JPEGData, 0666); err != nil {
-						return err
-					}
-
-				case *ChunkMXJVAF64:
-					// Write audio data into wave object.
-					if wavObject != nil {
-						if _, err := wavObject.Write(frameChunk.Data); err != nil {
-							return err
-						}
-						audioSampleCounter += int(frameChunk.Samples)
-					} else {
-						log.Printf("Found audio chunk, but there was no waveform table chunk.")
-					}
-
-				}
-			}
-
-			break
+	// Video frames.
+	log.Printf("Extracting video frames.")
+	for frame := range mxvReader.VideoFrames() {
+		videoFilename := filepath.Join(outputPath, fmt.Sprintf("video-%06d.jpeg", frame))
+		file, err := os.Create(videoFilename)
+		if err != nil {
+			return fmt.Errorf("failed to create file: %w", err)
+		}
+		frameReader, err := mxvReader.VideoFrameData(frame)
+		if err != nil {
+			return fmt.Errorf("failed to get video data stream: %w", err)
+		}
+		if _, err := io.Copy(file, frameReader); err != nil {
+			return fmt.Errorf("failed to copy video data stream: %w", err)
 		}
 	}
 
-	// Write wav data into file.
-	if wavObject != nil {
+	log.Printf("Finished extracting video frames.")
+
+	if mxvReader.Info.HasAudio {
+		// TODO: go-wav doesn't support streaming, therefore replace it
+
+		// Set up empty wav object.
+		wavObject, err := wav.New(int(mxvReader.Info.AudioSampleRate), int(mxvReader.Info.AudioChannelBitDepth), int(mxvReader.Info.AudioChannels))
+		if err != nil {
+			return fmt.Errorf("failed to create wav object: %w", err)
+		}
+
+		// Append sample data.
+		log.Printf("Extracting audio samples.")
+		for frame := range mxvReader.AudioFrames() {
+			frameReader, _, _, err := mxvReader.AudioFrameData(frame)
+			if err != nil {
+				return fmt.Errorf("failed to get audio data stream: %w", err)
+			}
+			frameData, err := io.ReadAll(frameReader)
+			if err != nil {
+				return fmt.Errorf("failed to read audio data stream: %w", err)
+			}
+			if _, err := wavObject.Write(frameData); err != nil {
+				return fmt.Errorf("failed to append audio data to wave object: %w", err)
+			}
+		}
+
+		// Write audio file to disk.
+		audioFilename := filepath.Join(outputPath, "audio.wav")
+		log.Printf("Writing extracted audio data to disk at %q.", audioFilename)
 		wavTemp, err := wav.Marshal(wavObject)
 		if err != nil {
 			return fmt.Errorf("failed to encode wave data: %w", err)
 		}
-		audioFilename := filepath.Join(outputPath, "audio.wav")
 		if err := os.WriteFile(audioFilename, wavTemp, 0666); err != nil {
 			return fmt.Errorf("failed to write audio file: %w", err)
 		}
+
+		log.Printf("Finished writing audio data.")
 	}
 
-	log.Printf("Completely demuxed %q: %d video frames, %d audio samples", filename, frameCounter, audioSampleCounter)
+	log.Printf("Completely demuxed %q.", filename)
 
 	return nil
 }

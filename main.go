@@ -7,7 +7,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -36,11 +35,6 @@ func main() {
 			log.Printf("Failed to demux %q: %v", filename, err)
 		}
 	}
-
-	log.Printf("All process done.")
-
-	log.Printf("Press any key to exit...")
-	fmt.Scanln()
 }
 
 func findFiles(root string) ([]string, error) {
