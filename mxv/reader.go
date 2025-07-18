@@ -167,7 +167,9 @@ func (r *Reader) VideoFrameData(frame int) (io.Reader, error) {
 		return nil, fmt.Errorf("failed to read chunk: %w", err)
 	}
 
-	if chunk.Length() != int64(vfte.VideoFrameChunkSize) {
+	// Check size, but only if the VideoFrameChunkSize field is != 0.
+	// May be some sort of corruption that occurs in older MXV files.
+	if vfte.VideoFrameChunkSize != 0 && chunk.Length() != int64(vfte.VideoFrameChunkSize) {
 		return nil, fmt.Errorf("parsed chunk is of wrong size. Got %d bytes, want %d bytes", chunk.Length(), vfte.VideoFrameChunkSize)
 	}
 
@@ -240,7 +242,9 @@ func (r *Reader) AudioFrameData(frame int) (reader io.Reader, startSample uint64
 		return nil, 0, 0, fmt.Errorf("failed to read chunk: %w", err)
 	}
 
-	if chunk.Length() != int64(afte.AudioFrameChunkSize) {
+	// Check size, but only if the AudioFrameChunkSize field is != 0.
+	// May be some sort of corruption that occurs in older MXV files.
+	if afte.AudioFrameChunkSize != 0 && chunk.Length() != int64(afte.AudioFrameChunkSize) {
 		return nil, 0, 0, fmt.Errorf("parsed chunk is of wrong size. Got %d bytes, want %d bytes", chunk.Length(), afte.AudioFrameChunkSize)
 	}
 
