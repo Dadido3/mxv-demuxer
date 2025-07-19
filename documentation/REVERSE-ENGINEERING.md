@@ -7,8 +7,8 @@ The file can be used with [ImHex] to inspect any MXV file:
 
 ## Format basics
 
-It's a really simple video format, as it is just a bunch of JPEG images and PCM audio data stored in some relatively simple data structures.
-Theoretically (and practically) you can grab the JPEG and PCM data without modifying it, put it into another container (like AVI), and then be able to play it back with non MAGIX software.
+It's a really simple video format, as it is just a bunch of JPEG images and raw audio data stored in some relatively simple data structures.
+Theoretically (and practically) you can grab the JPEG and raw audio data without modifying it, put it into another container (like AVI), and then be able to play it back with non MAGIX software.
 And that without losing any image/sound quality, as there is no transcoding or re-encoding happening.
 And that's basically what this project is about.
 

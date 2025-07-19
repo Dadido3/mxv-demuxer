@@ -21,7 +21,7 @@ type Chunk64MXJVAF64 struct {
 
 	Data Chunk64MXJVAF64Data
 
-	dataStartOffset int64 // File offset where the PCM data starts.
+	dataStartOffset int64 // File offset where the audio data starts.
 }
 
 type Chunk64MXJVAF64Data struct {
@@ -40,10 +40,11 @@ func (c *Chunk64MXJVAF64) Length() int64 {
 	return 8 + 8 + c.Header.DataLength
 }
 
-// Returns an io.Reader with the raw PCM audio data.
+// Returns an io.Reader with the raw audio data.
+// The encoding of the data is stored in Chunk64MXWFMT64.Data.AudioFormat, and is similar to the wFormatTag in wav files.
 func (c *Chunk64MXJVAF64) DataReader() (io.Reader, error) {
 	if _, err := c.Accessor.Seek(c.dataStartOffset, io.SeekStart); err != nil {
-		return nil, fmt.Errorf("failed to seek to the start of the PCM audio data: %w", err)
+		return nil, fmt.Errorf("failed to seek to the beginning of the audio data: %w", err)
 	}
 
 	return io.LimitReader(c.Accessor, c.Header.DataLength-16), nil

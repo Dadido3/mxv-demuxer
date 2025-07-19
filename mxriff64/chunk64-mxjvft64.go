@@ -19,7 +19,7 @@ type Chunk64MXJVFT64 struct {
 		DataLength int64
 	}
 
-	dataStartOffset int64 // File offset where the PCM data starts.
+	dataStartOffset int64 // File offset where the lookup data starts.
 }
 
 // Returns the identifier of the chunk.

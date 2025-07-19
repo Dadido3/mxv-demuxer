@@ -107,10 +107,7 @@ func NewReader(rs io.ReadSeeker) (*Reader, error) {
 
 	if r.Info.HasAudio {
 		if r.chunkWaveFormat != nil {
-			if r.chunkWaveFormat.Data.Tracks != 1 {
-				return nil, fmt.Errorf("can't handle audio tracks != 1") // It's not even clear if this field stores the number of audio tracks, or some other data.
-			}
-
+			r.Info.AudioFormat = r.chunkWaveFormat.Data.AudioFormat
 			r.Info.AudioChannels = r.chunkWaveFormat.Data.Channels
 			r.Info.AudioSampleRate = r.chunkWaveFormat.Data.ByteRate / uint32(r.chunkWaveFormat.Data.BytesPerSample) // r.chunkWaveFormat.Data.SampleRate does not seem reliable and can differ slightly.
 			r.Info.AudioByteRate = r.chunkWaveFormat.Data.ByteRate
@@ -216,7 +213,8 @@ func (r *Reader) AudioFrameFromSample(sample uint64) (frame int, samples uint32,
 	return 0, 0, fmt.Errorf("couldn't find any audio frame that contains sample %d", sample)
 }
 
-// AudioFrameData returns a reader to the raw PCM audio data for the given sample range.
+// AudioFrameData returns a reader to the raw audio data for the given audio frame.
+// The encoding of the data is defined in Info.AudioFormat, and is similar to the wFormatTag in wav files.
 //
 // The range of valid frame numbers is [0...Info.AudioFrames-1].
 func (r *Reader) AudioFrameData(frame int) (reader io.Reader, startSample uint64, samples uint32, err error) {

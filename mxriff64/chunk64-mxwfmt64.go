@@ -22,12 +22,12 @@ type Chunk64MXWFMT64 struct {
 }
 
 type Chunk64MXWFMT64Data struct {
-	Tracks          uint16 // Guess: The number of tracks if there are multiple. But it could also encode the byte format used.
-	Channels        uint16 // The number of channels.
-	SampleRate      uint32 // Samples per second.
-	ByteRate        uint32 // Bytes per second.
-	BytesPerSample  uint16 // The number of bytes per sample. (Channels * ChannelBitDepth / 8) or (ByteRate / SampleRate)
-	ChannelBitDepth uint32 // Bits per channel per sample.
+	AudioFormat     AudioFormat // Guess: Similar to the "fmt " chunk in wav files this denotes the audio format.
+	Channels        uint16      // The number of channels.
+	SampleRate      uint32      // Samples per second.
+	ByteRate        uint32      // Bytes per second.
+	BytesPerSample  uint16      // The number of bytes per sample. (Channels * ChannelBitDepth / 8) or (ByteRate / SampleRate)
+	ChannelBitDepth uint32      // Bits per channel per sample.
 }
 
 // Returns the identifier of the chunk.

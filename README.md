@@ -4,7 +4,7 @@ A simple tool to demux ".mxv" (MAGIX Video) files.
 
 This program extracts all video frames and audio samples from mxv files.
 It doesn't convert or transcodes anything, so there is no loss in quality in the process.
-What you get is the pure/raw series of JPEGs and PCM audio data that is contained in mxv files.
+What you get is the pure/raw series of JPEGs and audio data that is contained in mxv files.
 
 You then can use Avidemux, or any other software you like, to write this data into another container that can be read by other video software.
 This, too, can be done without any loss in quality.

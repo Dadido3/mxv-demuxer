@@ -36,7 +36,7 @@ enum MXIdentifier64 : u64 {
     MXLIST32 = 0x32335453494C584D, // List of sub-chunks.
     MXLIST64 = 0x34365453494C584D, // List of sub-chunks.
 
-    MXJVAF64 = 0x34364641564A584D, // Audio frame data as raw PCM data.
+    MXJVAF64 = 0x34364641564A584D, // Audio frame data encoded similar to a wav file.
     MXJVCO64 = 0x34364F43564A584D, // Guess: Video color something?
     MXJVFT64 = 0x34365446564A584D, // Video frame table: File offsets for fast seeking of specific frames. Contains one more entry than there are video frames in my test files. This is probably due to the list not containing any size information, and therefore the difference between the current and next entry is used. Therefore the entry for the last frame needs another entry after it.
     MXJVH264 = 0x34363248564A584D, // Video format info.
@@ -54,16 +54,24 @@ enum MXContentType64 : u64 {
 
 // Color formats.
 enum ColorFormat : u32 {
-    ColorFormatZero = 0,
-    ColorFormatThree = 3,
-    ColorFormatI420 = 0x30323449,
-    ColorFormatIYUV = 0x56555949,
-    ColorFormatY411 = 0x31313459,
-    ColorFormatY422 = 0x32323456,
-    ColorFormatYUNV = 0x564e5559,
-    ColorFormatYUY2 = 0x32595559,
-    ColorFormatYUYV = 0x56595559,
-    ColorFormatYV12 = 0x32315659,
+    Zero = 0,
+    Three = 3,
+    I420 = 0x30323449,
+    IYUV = 0x56555949,
+    Y411 = 0x31313459,
+    Y422 = 0x32323456,
+    YUNV = 0x564e5559,
+    YUY2 = 0x32595559,
+    YUYV = 0x56595559,
+    YV12 = 0x32315659,
+};
+
+// Audio formats.
+enum AudioFormat : u16 {
+    PCM = 1,
+    IEEEFloat = 3,
+    ALaw = 6,
+    MuLaw = 7,
 };
 
 using Chunk64;
@@ -203,7 +211,7 @@ struct ChunkMXJVVF64 {
 };
 
 struct ChunkMXWFMT64 {
-    u16 Tracks;             // Guess: The number of tracks if there are multiple. But it could also encode the byte format used.
+    AudioFormat Format;     // Guess: Similar to the "fmt " chunk in wav files this denotes the audio format.
     u16 Channels;           // The number of channels.
     u32 SampleRate;         // Samples per second.
     u32 ByteRate;           // Bytes per second.

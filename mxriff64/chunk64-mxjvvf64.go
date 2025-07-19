@@ -19,7 +19,7 @@ type Chunk64MXJVVF64 struct {
 		DataLength int64
 	}
 
-	dataStartOffset int64 // File offset where the chunk data starts. This is the beginning of the sub-chunk list.
+	dataStartOffset int64 // File offset where the JPEG data starts.
 }
 
 // Returns the identifier of the chunk.
