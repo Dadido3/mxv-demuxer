@@ -22,11 +22,11 @@ For MXV files it's most likely always set to `MXJVID64`.
 
 The root chunk has the following sub-chunks:
 
-- `MXJVH264`: This contains information about the number of video and audio frames, the video resolution, the framerate, and some unimportant and/or unknown data.
+- `MXJVH264`: This contains information about the number of video and audio frames, the video resolution, the framerate, and similar information. There are still unknown fields.
 - `MXJVHD64`: Same as `MXJVH264`, but shorter.
   Likely from an older version, and it may just be there for compatibility reasons.
   It's also missing all of the audio information.
-- `MXMFMT64`: Wave format stuff. Like sample rate, number of channels, ...
+- `MXWFMT64`: Wave format stuff. Like sample rate, number of channels, ...
 - `MXJVCO64`: Unknown.
 - `MXJVPD64`: Unknown.
 - `MXLIST64`: A list of sub-chunks with `ContentType` set to `MXJVFL64`.
