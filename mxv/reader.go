@@ -288,10 +288,22 @@ func (r *Reader) PrepareLookupTable() error {
 
 	// Check that we got as many frames as stated in the header.
 	if r.Info.VideoFrames != uint64(len(r.videoFrameOffsets)) {
-		return fmt.Errorf("actual number of video frames (%d) differs from value in the header (%d)", len(r.videoFrameOffsets), r.Info.VideoFrames)
+		return fmt.Errorf("actual number of video frames (%d) differs from header value (%d)", len(r.videoFrameOffsets), r.Info.VideoFrames)
 	}
 	if r.Info.AudioFrames != uint64(len(r.audioFrameOffsets)) {
-		return fmt.Errorf("actual number of audio frames (%d) differs from value in the header (%d)", len(r.audioFrameOffsets), r.Info.AudioFrames)
+		return fmt.Errorf("actual number of audio frames (%d) differs from header value (%d)", len(r.audioFrameOffsets), r.Info.AudioFrames)
+	}
+
+	// Also check that we got the promised amount of audio samples without gaps or overlaps.
+	var audioSamples uint64
+	for _, afte := range r.audioFrameOffsets {
+		if afte.StartSample != audioSamples {
+			return fmt.Errorf("there is a gap or overlap in the audio data")
+		}
+		audioSamples += uint64(afte.Samples)
+	}
+	if audioSamples != r.Info.AudioSamples {
+		return fmt.Errorf("actual number of audio samples (%d) differs from header value (%d)", audioSamples, r.Info.AudioSamples)
 	}
 
 	return nil
